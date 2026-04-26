@@ -106,7 +106,7 @@ export function createWorkflowHandler(initialState?: Partial<WorkflowMonitorStat
             violation: {
               type: "process-write-during-thinking",
               path,
-              message: "Brainstorm/Plan writes are limited to docs/superpowers/specs/ and docs/superpowers/plans/.",
+              message: "Brainstorm/Plan writes are limited to docs/specs/ and docs/plans/.",
             },
           };
         }

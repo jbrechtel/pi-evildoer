@@ -1,0 +1,8 @@
+node_modules
+.git
+.pi/npm
+.pi/git
+npm-debug.log
+.DS_Store
+fnox.toml
+mise.toml

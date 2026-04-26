@@ -21,6 +21,12 @@ pi install npm:pi-subagents
 ## Installation
 
 ```bash
+pi install npm:@casualjim/pi-superpowers
+```
+
+You can also install directly from git:
+
+```bash
 pi install git:github.com/casualjim/pi-superpowers
 ```
 
@@ -49,6 +55,24 @@ Canonical Superpowers review is read-only. This repo bundles reviewer templates 
 Users can copy those templates into their repository's `.pi/agents/` directory to customize reviewer behavior. Project agents have higher priority in `pi-subagents` discovery, so repository-local copies can override the bundled/default behavior without changing global configuration.
 
 Use the `superpowers-spec-reviewer` and `superpowers-code-reviewer` reviewer contracts, not the builtin review-and-fix `reviewer` agent.
+
+## Docker E2E Installation Recovery Test
+
+The default test suite is unit/regression only:
+
+```bash
+npm test
+```
+
+A dedicated real-Pi Docker integration test proves installation recovery end-to-end. It is a mise task so your configured mise/fnox environment can provide `ZAI_API_KEY` without the test harness inspecting the secret:
+
+```bash
+mise run test:integration
+```
+
+This builds a Docker image that copies this repository into `/workspace/pi-superpowers`, installs the real Pi CLI, installs `npm:@thesethrose/pi-zai-provider`, uses `zai/glm-5-turbo`, and verifies the exact recovery commands for missing companion packages. The test assumes `ZAI_API_KEY` is provided by the caller and does not preflight or debug secrets.
+
+`fnox.toml` and `mise.toml` are committed for local secret/tool environment setup, but `.dockerignore` excludes them from the Docker build context.
 
 ## Architecture
 

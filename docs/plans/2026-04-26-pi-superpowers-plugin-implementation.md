@@ -385,8 +385,8 @@ import {
 } from "../extensions/workflow-monitor/workflow-tracker.ts";
 
 test("thinking phases allow canonical Superpowers spec and plan paths", () => {
-  assert.equal(isAllowedThinkingPhaseWrite("docs/superpowers/specs/2026-04-26-design.md", process.cwd()), true);
-  assert.equal(isAllowedThinkingPhaseWrite("docs/superpowers/plans/2026-04-26-plan.md", process.cwd()), true);
+  assert.equal(isAllowedThinkingPhaseWrite("docs/specs/2026-04-26-design.md", process.cwd()), true);
+  assert.equal(isAllowedThinkingPhaseWrite("docs/plans/2026-04-26-plan.md", process.cwd()), true);
 });
 
 test("thinking phases do not allow source writes", () => {
@@ -436,8 +436,8 @@ Expected: FAIL because helper modules do not exist.
 Requirements:
 
 - `isAllowedThinkingPhaseWrite(filePath, cwd)` returns true only for:
-  - `docs/superpowers/specs/`
-  - `docs/superpowers/plans/`
+  - `docs/specs/`
+  - `docs/plans/`
 - `isSourceFile(filePath)` returns true for implementation source extensions but false for test files and markdown.
 - `isTestFile(filePath)` recognizes `.test.`, `.spec.`, `tests/`, `test/`, and `__tests__/`.
 
@@ -551,7 +551,7 @@ test("workflow handler flags source writes during brainstorm", () => {
 test("workflow handler allows canonical spec writes during brainstorm", () => {
   const handler = createWorkflowHandler();
   handler.handleInputText("/skill:brainstorming");
-  const result = handler.handleToolCall("write", { path: "docs/superpowers/specs/example-design.md" });
+  const result = handler.handleToolCall("write", { path: "docs/specs/example-design.md" });
   assert.equal(result.violation, undefined);
 });
 
@@ -611,8 +611,8 @@ Requirements:
 
 - Warning text must reinforce canonical Superpowers, not replace it.
 - Process warning must say Brainstorm/Plan writes are limited to:
-  - `docs/superpowers/specs/`
-  - `docs/superpowers/plans/`
+  - `docs/specs/`
+  - `docs/plans/`
 - TDD warning must preserve strict canonical rule:
   - `NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST`
 - Verification warning must explain what command triggered it and what verification is missing.
@@ -926,8 +926,8 @@ For each remaining skill:
    - `Task` subagent examples → `subagent`
    - harness skill syntax → Pi `/skill:name`
 4. Preserve canonical artifact paths:
-   - `docs/superpowers/specs/`
-   - `docs/superpowers/plans/`
+   - `docs/specs/`
+   - `docs/plans/`
 
 - [ ] **Step 8: Run skill tests**
 
@@ -1129,10 +1129,10 @@ Expected: output only from deliberate mapping/dependency documentation.
 - [ ] **Step 5: Verify canonical artifact paths**
 
 ```bash
-grep -R "docs/superpowers/specs\|docs/superpowers/plans" skills extensions README.md
+grep -R "docs/specs\|docs/plans" skills extensions README.md
 ```
 
-Expected: product behavior references canonical `docs/superpowers/specs/` and `docs/superpowers/plans/`.
+Expected: product behavior references canonical `docs/specs/` and `docs/plans/`.
 
 - [ ] **Step 6: Review diff**
 

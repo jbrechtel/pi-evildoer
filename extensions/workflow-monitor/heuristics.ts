@@ -33,7 +33,7 @@ function normalize(filePath: string, cwd = process.cwd()): string {
 
 export function isAllowedThinkingPhaseWrite(filePath: string, cwd = process.cwd()): boolean {
   const relative = normalize(filePath, cwd);
-  return relative.startsWith("docs/superpowers/specs/") || relative.startsWith("docs/superpowers/plans/");
+  return relative.startsWith("docs/specs/") || relative.startsWith("docs/plans/");
 }
 
 export function isTestFile(filePath: string): boolean {

@@ -14,8 +14,8 @@ import {
 } from "../extensions/workflow-monitor/workflow-tracker.ts";
 
 test("thinking phases allow canonical Superpowers spec and plan paths", () => {
-  assert.equal(isAllowedThinkingPhaseWrite("docs/superpowers/specs/2026-04-26-design.md", process.cwd()), true);
-  assert.equal(isAllowedThinkingPhaseWrite("docs/superpowers/plans/2026-04-26-plan.md", process.cwd()), true);
+  assert.equal(isAllowedThinkingPhaseWrite("docs/specs/2026-04-26-design.md", process.cwd()), true);
+  assert.equal(isAllowedThinkingPhaseWrite("docs/plans/2026-04-26-plan.md", process.cwd()), true);
 });
 
 test("thinking phases do not allow source writes", () => {
@@ -69,7 +69,7 @@ test("workflow handler flags source writes during brainstorm", () => {
 test("workflow handler allows canonical spec writes during brainstorm", () => {
   const handler = createWorkflowHandler();
   handler.handleInputText("/skill:brainstorming");
-  const result = handler.handleToolCall("write", { path: "docs/superpowers/specs/example-design.md" });
+  const result = handler.handleToolCall("write", { path: "docs/specs/example-design.md" });
   assert.equal(result.violation, undefined);
 });
 

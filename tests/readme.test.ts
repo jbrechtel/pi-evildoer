@@ -5,8 +5,8 @@ import { test } from "node:test";
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
 test("README documents installation", () => {
-  assert.match(readme, /pi install/i);
-  assert.match(readme, /pi-superpowers/i);
+  assert.match(readme, /pi install npm:@casualjim\/pi-superpowers/);
+  assert.match(readme, /pi install git:github\.com\/casualjim\/pi-superpowers/);
 });
 
 test("README documents required companion packages", () => {
@@ -27,4 +27,13 @@ test("README documents read-only reviewer agents", () => {
   assert.match(readme, /agents\//);
   assert.match(readme, /copy.*repository.*customize/is);
   assert.match(readme, /not the builtin.*reviewer/is);
+});
+
+test("README documents Docker integration test", () => {
+  assert.match(readme, /mise run test:integration/);
+  assert.doesNotMatch(readme, /test:integration:local/);
+  assert.match(readme, /ZAI_API_KEY/);
+  assert.match(readme, /zai\/glm-5-turbo/);
+  assert.match(readme, /Docker/i);
+  assert.match(readme, /@thesethrose\/pi-zai-provider/);
 });
