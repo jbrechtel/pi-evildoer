@@ -65,12 +65,14 @@ Each agent gets:
 
 ### 3. Dispatch in Parallel
 
-```typescript
-// In Claude Code / AI environment
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently
+```ts
+subagent({
+  tasks: [
+    { agent: "worker", task: "Fix agent-tool-abort.test.ts failures" },
+    { agent: "worker", task: "Fix batch-completion-behavior.test.ts failures" },
+    { agent: "worker", task: "Fix tool-approval-race-conditions.test.ts failures" }
+  ]
+})
 ```
 
 ### 4. Review and Integrate

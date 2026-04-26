@@ -55,15 +55,15 @@ digraph process {
         "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
         "Code quality reviewer subagent approves?" [shape=diamond];
         "Implementer subagent fixes quality issues" [shape=box];
-        "Mark task complete in TodoWrite" [shape=box];
+        "Mark task complete in todo" [shape=box];
     }
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
+    "Read plan, extract all tasks with full text, note context, create todo" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent for entire implementation" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
+    "Read plan, extract all tasks with full text, note context, create todo" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -76,8 +76,8 @@ digraph process {
     "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
     "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
+    "Code quality reviewer subagent approves?" -> "Mark task complete in todo" [label="yes"];
+    "Mark task complete in todo" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
     "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
@@ -123,6 +123,37 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
 
+## Pi subagent Usage
+
+Use `pi-subagents` directly. Fill the prompt templates with the task-specific context before dispatch.
+
+```ts
+subagent({ agent: "worker", task: "...filled implementer prompt...", context: "fresh" })
+```
+
+```ts
+subagent({ agent: "superpowers-spec-reviewer", task: "...filled spec review prompt...", context: "fresh" })
+```
+
+```ts
+subagent({ agent: "superpowers-code-reviewer", task: "...filled code review prompt...", context: "fresh" })
+```
+
+The read-only reviewer agents are bundled as package-owned templates in `agents/`:
+
+- `agents/superpowers-spec-reviewer.md`
+- `agents/superpowers-code-reviewer.md`
+
+Users can copy these templates into their repository to customize reviewer behavior. Do not silently create persistent reviewer agents. Do not use the builtin `reviewer` agent for canonical Superpowers review because it may edit files.
+
+Use the Pi `todo` tool for task tracking:
+
+```ts
+todo({ action: "create", subject: "Implement Task N" })
+todo({ action: "update", id: 1, status: "in_progress", activeForm: "implementing task N" })
+todo({ action: "update", id: 1, status: "completed" })
+```
+
 ## Example Workflow
 
 ```
@@ -130,7 +161,7 @@ You: I'm using Subagent-Driven Development to execute this plan.
 
 [Read plan file once: docs/superpowers/plans/feature-plan.md]
 [Extract all 5 tasks with full text and context]
-[Create TodoWrite with all tasks]
+[Create todo with all tasks]
 
 Task 1: Hook installation script
 
