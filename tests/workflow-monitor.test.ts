@@ -6,6 +6,7 @@ import {
   isTestFile,
 } from "../extensions/workflow-monitor/heuristics.ts";
 import { parseTestCommand, parseTestResult } from "../extensions/workflow-monitor/test-runner.ts";
+import { createWorkflowHandler } from "../extensions/workflow-monitor/workflow-handler.ts";
 import {
   parseSkillName,
   SKILL_TO_PHASE,
@@ -48,4 +49,37 @@ test("skill parsing maps canonical workflow skills to phases", () => {
   assert.equal(SKILL_TO_PHASE["brainstorming"], "brainstorm");
   assert.equal(SKILL_TO_PHASE["writing-plans"], "plan");
   assert.deepEqual(WORKFLOW_PHASES, ["brainstorm", "plan", "execute", "verify", "review", "finish"]);
+});
+
+test("workflow handler flags source writes during brainstorm", () => {
+  const handler = createWorkflowHandler();
+  handler.handleInputText("/skill:brainstorming");
+  const result = handler.handleToolCall("write", { path: "src/index.ts" });
+  assert.equal(result.violation?.type, "process-write-during-thinking");
+});
+
+test("workflow handler allows canonical spec writes during brainstorm", () => {
+  const handler = createWorkflowHandler();
+  handler.handleInputText("/skill:brainstorming");
+  const result = handler.handleToolCall("write", { path: "docs/superpowers/specs/example-design.md" });
+  assert.equal(result.violation, undefined);
+});
+
+test("workflow handler records source edit and warns before commit without verification", () => {
+  const handler = createWorkflowHandler();
+  handler.handleInputText("/skill:executing-plans");
+  handler.handleFileWritten("src/index.ts");
+  const violation = handler.checkCommitGate("git commit -m test");
+  assert.equal(violation?.type, "commit-without-verification");
+});
+
+test("workflow handler state is serializable and reconstructable", () => {
+  const handler = createWorkflowHandler();
+  handler.handleInputText("/skill:writing-plans");
+  const snapshot = handler.getFullState();
+
+  const restored = createWorkflowHandler();
+  restored.setFullState(snapshot);
+
+  assert.deepEqual(restored.getFullState(), snapshot);
 });
