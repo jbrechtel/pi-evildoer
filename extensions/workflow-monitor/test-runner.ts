@@ -11,8 +11,26 @@ const TEST_COMMAND_PATTERNS = [
   /(^|\s)go\s+test(\s|$)/,
 ];
 
+function normalizeMiseCommand(command: string): string[] {
+  const trimmed = command.trim();
+  const commands = [trimmed];
+
+  if (/^mise\s+(run\s+)?test(\s|$)/.test(trimmed)) {
+    commands.push("npm test");
+  }
+
+  const execMatch = trimmed.match(/^mise\s+exec\b[\s\S]*?\s--\s+([\s\S]+)$/);
+  if (execMatch?.[1]) {
+    commands.push(execMatch[1].trim());
+  }
+
+  return commands;
+}
+
 export function parseTestCommand(command: string): boolean {
-  return TEST_COMMAND_PATTERNS.some((pattern) => pattern.test(command));
+  return normalizeMiseCommand(command).some((candidate) =>
+    TEST_COMMAND_PATTERNS.some((pattern) => pattern.test(candidate)),
+  );
 }
 
 export function parseTestResult(_output: string, exitCode?: number | null): boolean | null {

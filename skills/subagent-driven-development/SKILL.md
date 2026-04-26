@@ -144,7 +144,7 @@ The read-only reviewer agents are bundled as package-owned templates in `agents/
 - `agents/superpowers-spec-reviewer.md`
 - `agents/superpowers-code-reviewer.md`
 
-Users can copy these templates into their repository to customize reviewer behavior. Do not silently create persistent reviewer agents. Do not use the builtin `reviewer` agent for canonical Superpowers review because it may edit files.
+These templates set `inheritSkills: true` so reviewer subagents can follow installed Superpowers skills and rules. Users can copy them into their repository's `.pi/agents/` directory to customize reviewer behavior, per pi-subagents project agent discovery. Do not silently create persistent reviewer agents. Do not use the builtin `reviewer` agent for canonical Superpowers review because it may edit files.
 
 Use the Pi `todo` tool for task tracking:
 

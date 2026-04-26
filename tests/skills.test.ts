@@ -65,9 +65,19 @@ test("parallel agents skill uses subagent parallel mode", () => {
   assert.doesNotMatch(text, /Task tool/i);
 });
 
-test("reviewer agent templates are bundled with the package", () => {
-  assert.equal(existsSync("agents/superpowers-spec-reviewer.md"), true);
-  assert.equal(existsSync("agents/superpowers-code-reviewer.md"), true);
+test("reviewer agent templates are bundled as pi-subagents agent files", () => {
+  const spec = readFileSync("agents/superpowers-spec-reviewer.md", "utf8");
+  const code = readFileSync("agents/superpowers-code-reviewer.md", "utf8");
+
+  for (const text of [spec, code]) {
+    assert.match(text, /^---\n/);
+    assert.match(text, /\nname: superpowers-/);
+    assert.match(text, /\ntools: read, grep, find, ls, bash\n/);
+    assert.match(text, /\nsystemPromptMode: replace\n/);
+    assert.match(text, /\ninheritProjectContext: true\n/);
+    assert.match(text, /\ninheritSkills: true\n/);
+    assert.match(text, /Do not edit, write, delete, or modify files/);
+  }
 });
 
 test("skills use todo tool instead of TodoWrite or plan_tracker operational instructions", () => {

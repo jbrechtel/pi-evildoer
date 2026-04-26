@@ -57,7 +57,7 @@ Canonical reviewer role names for this package:
 - `superpowers-spec-reviewer` — read-only spec compliance reviewer.
 - `superpowers-code-reviewer` — read-only production-readiness reviewer.
 
-If those agents are missing, the adapted skills must instruct the orchestrator to create them with `pi-subagents` management actions before dispatching review work. Those reviewer definitions live in the user `pi-subagents` agent scope.
+This repo bundles those reviewer definitions as package-owned templates under `agents/`. Users can copy them into their own repository to customize reviewer behavior. The adapted skills should refer to these reviewer role names and bundled templates without prescribing where a user's `pi-subagents` installation stores copied/customized agents.
 
 Examples:
 
@@ -66,7 +66,7 @@ subagent({ agent: "worker", task: "...", context: "fresh" })
 ```
 
 ```ts
-subagent({ agent: "superpowers-code-reviewer", task: "...", context: "fresh", agentScope: "user" })
+subagent({ agent: "superpowers-code-reviewer", task: "...", context: "fresh" })
 ```
 
 ```ts
@@ -88,6 +88,8 @@ subagent({
 - `package.json` — Pi package manifest and scripts.
 - `LICENSE` — MIT license file matching package metadata.
 - `README.md` — install, companion package, and architecture docs.
+- `agents/superpowers-spec-reviewer.md` — bundled read-only spec reviewer template users may copy into their repo to customize.
+- `agents/superpowers-code-reviewer.md` — bundled read-only code reviewer template users may copy into their repo to customize.
 - `extensions/bootstrap.ts` — mandatory Superpowers bootstrap injection.
 - `extensions/workflow-monitor.ts` — Pi workflow monitor entry point.
 - `extensions/workflow-monitor/heuristics.ts` — source/test/path classification.
@@ -196,7 +198,8 @@ Expected: FAIL with missing `package.json`.
     "extensions/",
     "skills/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "agents/"
   ],
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.ts"
@@ -683,6 +686,8 @@ git commit -m "feat: add superpowers workflow monitor"
 
 **Files:**
 - Create: `tests/skills.test.ts`
+- Create: `agents/superpowers-spec-reviewer.md`
+- Create: `agents/superpowers-code-reviewer.md`
 - Modify: `skills/using-superpowers/SKILL.md`
 - Modify: `skills/subagent-driven-development/SKILL.md`
 - Modify: `skills/subagent-driven-development/implementer-prompt.md`
@@ -750,8 +755,8 @@ test("subagent-driven-development uses pi-subagents and keeps canonical statuses
   assert.match(text, /spec compliance.*code quality/is);
   assert.match(text, /superpowers-spec-reviewer/);
   assert.match(text, /superpowers-code-reviewer/);
-  assert.match(text, /agentScope:\s*"user"/);
-  assert.match(text, /action:\s*"create"/);
+  assert.doesNotMatch(text, /agentScope\s*:/);
+  assert.doesNotMatch(text, /scope:\s*"user"/);
   assert.doesNotMatch(text, /agent:\s*"reviewer"/);
   assert.doesNotMatch(text, /Task\(/);
   assert.doesNotMatch(text, /Task tool/i);
@@ -762,6 +767,11 @@ test("parallel agents skill uses subagent parallel mode", () => {
   assert.match(text, /subagent\s*\(\s*\{\s*tasks:/s);
   assert.doesNotMatch(text, /Task\(/);
   assert.doesNotMatch(text, /Task tool/i);
+});
+
+test("reviewer agent templates are bundled with the package", () => {
+  assert.equal(existsSync("agents/superpowers-spec-reviewer.md"), true);
+  assert.equal(existsSync("agents/superpowers-code-reviewer.md"), true);
 });
 
 test("skills use todo tool instead of TodoWrite or plan_tracker operational instructions", () => {
@@ -842,47 +852,20 @@ subagent({ agent: "worker", task: "...filled implementer prompt...", context: "f
 ```
 
 ```ts
-subagent({ agent: "superpowers-spec-reviewer", task: "...filled spec review prompt...", context: "fresh", agentScope: "user" })
+subagent({ agent: "superpowers-spec-reviewer", task: "...filled spec review prompt...", context: "fresh" })
 ```
 
 ```ts
-subagent({ agent: "superpowers-code-reviewer", task: "...filled code review prompt...", context: "fresh", agentScope: "user" })
+subagent({ agent: "superpowers-code-reviewer", task: "...filled code review prompt...", context: "fresh" })
 ```
 
-- Include a prerequisite section that verifies the read-only reviewer agents exist by calling `subagent({ action: "list", agentScope: "user" })`. If missing, create them with `pi-subagents` management actions using tools `read,bash,grep,find,ls` only.
-- Include exact creation snippets:
-
-```ts
-subagent({
-  action: "create",
-  config: {
-    name: "superpowers-spec-reviewer",
-    description: "Read-only Superpowers spec compliance reviewer",
-    scope: "user",
-    tools: "read,bash,grep,find,ls",
-    systemPromptMode: "replace",
-    inheritProjectContext: true,
-    inheritSkills: false,
-    systemPrompt: "You are a read-only spec compliance reviewer. Compare implementation against the requested task/spec. Do not edit, write, delete, or modify files. Report missing requirements, scope creep, and misunderstandings with file:line evidence."
-  }
-})
-```
-
-```ts
-subagent({
-  action: "create",
-  config: {
-    name: "superpowers-code-reviewer",
-    description: "Read-only Superpowers production readiness reviewer",
-    scope: "user",
-    tools: "read,bash,grep,find,ls",
-    systemPromptMode: "replace",
-    inheritProjectContext: true,
-    inheritSkills: false,
-    systemPrompt: "You are a read-only code quality reviewer. Review code changes for correctness, maintainability, security, testing, and production readiness. Do not edit, write, delete, or modify files. Return strengths, issues by severity, recommendations, and a clear merge readiness verdict."
-  }
-})
-```
+- Create bundled reviewer templates:
+  - `agents/superpowers-spec-reviewer.md` contains the read-only spec compliance reviewer contract from `skills/subagent-driven-development/spec-reviewer-prompt.md`.
+  - `agents/superpowers-code-reviewer.md` contains the read-only production readiness reviewer contract from `skills/subagent-driven-development/code-quality-reviewer-prompt.md` / `skills/requesting-code-review/code-reviewer.md`.
+- Include a prerequisite section that explains the read-only reviewer agents are bundled in `agents/` as package-owned templates.
+- State that users can copy `agents/superpowers-spec-reviewer.md` and `agents/superpowers-code-reviewer.md` into their repository to customize reviewer behavior.
+- Do not include `agentScope` or `scope: "user"` in the skill text.
+- Do not include automatic `subagent({ action: "create" })` snippets in the skill text.
 
 - [ ] **Step 5: Adapt `dispatching-parallel-agents` from canonical**
 
@@ -925,8 +908,7 @@ Required Pi adaptations:
 subagent({
   agent: "superpowers-code-reviewer",
   task: "...filled code-reviewer.md template...",
-  context: "fresh",
-  agentScope: "user"
+  context: "fresh"
 })
 ```
 
@@ -1013,6 +995,8 @@ test("README states obra superpowers is canonical", () => {
 test("README documents read-only reviewer agents", () => {
   assert.match(readme, /superpowers-spec-reviewer/);
   assert.match(readme, /superpowers-code-reviewer/);
+  assert.match(readme, /agents\//);
+  assert.match(readme, /copy.*repository.*customize/is);
   assert.match(readme, /not the builtin.*reviewer/is);
 });
 
@@ -1061,7 +1045,7 @@ pi install git:github.com/casualjim/pi-superpowers
 
 ## Reviewer Agents
 
-Canonical Superpowers review is read-only. Use `superpowers-spec-reviewer` and `superpowers-code-reviewer` agents created through pi-subagents management, not the builtin review-and-fix `reviewer` agent.
+Canonical Superpowers review is read-only. This repo bundles `agents/superpowers-spec-reviewer.md` and `agents/superpowers-code-reviewer.md` as reviewer templates. Users can copy those templates into their repository to customize reviewer behavior. Use those reviewer contracts, not the builtin review-and-fix `reviewer` agent.
 ```
 
 - [ ] **Step 4: Run README tests**

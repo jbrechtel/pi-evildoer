@@ -38,6 +38,14 @@ test("test runner detection recognizes common test commands", () => {
   assert.equal(parseTestCommand("git status"), false);
 });
 
+test("test runner detection recognizes mise test commands", () => {
+  assert.equal(parseTestCommand("mise run test"), true);
+  assert.equal(parseTestCommand("mise test"), true);
+  assert.equal(parseTestCommand("mise exec -- npm test"), true);
+  assert.equal(parseTestCommand("mise exec node@24 -- node --test tests/foo.test.ts"), true);
+  assert.equal(parseTestCommand("mise exec -- git status"), false);
+});
+
 test("test result parser uses exit code first", () => {
   assert.equal(parseTestResult("whatever", 0), true);
   assert.equal(parseTestResult("whatever", 1), false);
