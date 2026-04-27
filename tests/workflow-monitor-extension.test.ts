@@ -80,15 +80,22 @@ function createHarness(existingEntries: any[] = []) {
   return { emit, ctx, commands, appended, notifications, widgets, get editorText() { return editorText; }, get newSessionOptions() { return newSessionOptions; } };
 }
 
-test("extension persists reconstructed workflow state and renders workflow strip", async () => {
+test("extension renders the pi-superpowers-plus phase strip contract", async () => {
   const harness = createHarness();
   await harness.emit("input", { text: "/skill:brainstorming" });
 
   assert.equal(harness.appended.length, 1);
-  const widgetText = renderWidget(harness.widgets["pi-superpowers-workflow"]);
-  assert.match(widgetText, /<accent>\[brainstorm\]<\/accent>/);
-  assert.match(widgetText, /<dim> → <\/dim>/);
-  assert.match(widgetText, /<dim>plan<\/dim>/);
+  assert.equal(
+    renderWidget(harness.widgets["pi-superpowers-workflow"]),
+    [
+      "<accent>[brainstorm]</accent>",
+      "<dim>plan</dim>",
+      "<dim>execute</dim>",
+      "<dim>verify</dim>",
+      "<dim>review</dim>",
+      "<dim>finish</dim>",
+    ].join("<dim> → </dim>"),
+  );
 
   await harness.emit("tool_result", { toolName: "write", input: { path: "docs/specs/example-design.md" }, isError: false });
   assert.equal(harness.appended.at(-1).data.workflow.artifacts.brainstorm, "docs/specs/example-design.md");
@@ -99,14 +106,24 @@ test("extension observes todo and pi-subagents tools", async () => {
   await harness.emit("input", { text: "/skill:writing-plans" });
   await harness.emit("tool_call", { toolName: "todo", input: { action: "create", subject: "Implement Task 1" } });
   assert.equal(harness.appended.at(-1).data.workflow.currentPhase, "execute");
-  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<success>✓plan<\/success>.*<accent>\[execute\]<\/accent>/);
+  assert.equal(
+    renderWidget(harness.widgets["pi-superpowers-workflow"]),
+    [
+      "<dim>brainstorm</dim>",
+      "<success>✓plan</success>",
+      "<accent>[execute]</accent>",
+      "<dim>verify</dim>",
+      "<dim>review</dim>",
+      "<dim>finish</dim>",
+    ].join("<dim> → </dim>"),
+  );
 
   await harness.emit("tool_call", { toolName: "subagent", input: { agent: "superpowers-code-reviewer", task: "Review" } });
   assert.equal(harness.appended.at(-1).data.workflow.currentPhase, "review");
 });
 
 
-test("extension widget shows plus-style TDD and debug highlighting", async () => {
+test("extension widget uses the pi-superpowers-plus guardrail highlighting contract", async () => {
   const harness = createHarness();
   await harness.emit("tool_result", { toolName: "write", input: { path: "tests/widget.test.ts" }, isError: false });
   await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });

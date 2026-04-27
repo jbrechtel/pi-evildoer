@@ -60,6 +60,9 @@ function hasTddActivity(state: WorkflowMonitorState): boolean {
   return state.tdd.hasTestChange || state.tdd.hasSourceChange || state.tdd.lastTestExitCode !== null;
 }
 
+// Keep this phase strip visually identical to pi-superpowers-plus:
+// current: accent [phase], complete: success ✓phase, skipped/pending: dim,
+// separator: dim " → ". Do not simplify to plain string-array widgets.
 function formatPhaseStrip(state: WorkflowMonitorState, theme: any): string {
   if (!state.workflow.currentPhase) return "";
   const arrow = theme.fg("dim", " → ");
