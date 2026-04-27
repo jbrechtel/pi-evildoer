@@ -43,6 +43,8 @@ subagent({
 
 Do not dispatch canonical code review to the builtin `reviewer` agent because that agent may edit files. Canonical Superpowers review is read-only.
 
+**Workflow monitor signal:** The runtime monitor recognises `subagent({ agent: "superpowers-code-reviewer" ... })` as the canonical review phase signal. Keep this agent name exact. After review completes, `/workflow-next finish` can start a fresh finishing session.
+
 **Placeholders:**
 - `{WHAT_WAS_IMPLEMENTED}` - What you just built
 - `{PLAN_OR_REQUIREMENTS}` - What it should do

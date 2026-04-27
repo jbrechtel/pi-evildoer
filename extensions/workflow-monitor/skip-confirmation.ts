@@ -12,9 +12,10 @@ export function unresolvedPhasesBefore(targetPhase: WorkflowPhase, state: PhaseS
 
   const completed = new Set(state.completedPhases ?? []);
   const skipped = new Set(state.skippedPhases ?? []);
+  const current = state.currentPhase ?? null;
 
   return WORKFLOW_PHASES.slice(0, targetIndex).filter(
-    (phase) => !completed.has(phase) && !skipped.has(phase),
+    (phase) => phase !== current && !completed.has(phase) && !skipped.has(phase),
   );
 }
 

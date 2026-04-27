@@ -133,6 +133,8 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
+**Workflow monitor handoff:** The runtime monitor recognises the saved `docs/plans/*.md` file as the plan artifact. For a fresh execution session, use `/workflow-next execute <plan-path>`.
+
 After saving the plan, offer execution choice:
 
 **"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
@@ -144,9 +146,9 @@ After saving the plan, offer execution choice:
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- **REQUIRED SUB-SKILL:** Use `/skill:subagent-driven-development`
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
+- **REQUIRED SUB-SKILL:** Use `/skill:executing-plans`
 - Batch execution with checkpoints for review

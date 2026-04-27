@@ -130,6 +130,10 @@ From 24 failure memories:
 - Implications of success
 - ANY communication suggesting completion/correctness
 
+## Workflow Monitor
+
+Passing verification commands refresh the runtime monitor's verification state. Any source edit after that makes verification stale again. After verification passes, `/workflow-next review` can start a fresh review session.
+
 ## The Bottom Line
 
 **No shortcuts for verification.**

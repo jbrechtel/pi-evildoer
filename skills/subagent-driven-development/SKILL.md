@@ -127,6 +127,8 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 Use `pi-subagents` directly. Fill the prompt templates with the task-specific context before dispatch.
 
+**Workflow monitor signals:** The runtime monitor recognises `subagent({ agent: "worker" ... })` as execution work, `subagent({ agent: "superpowers-spec-reviewer" ... })` as per-task spec review during execution, and `subagent({ agent: "superpowers-code-reviewer" ... })` as code review. Keep these agent names exact.
+
 ```ts
 subagent({ agent: "worker", task: "...filled implementer prompt...", context: "fresh" })
 ```

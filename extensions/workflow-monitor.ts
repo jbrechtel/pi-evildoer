@@ -1,5 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { createWorkflowHandler, type WorkflowMonitorState } from "./workflow-monitor/workflow-handler.ts";
+import { getCurrentGitRef } from "./workflow-monitor/git.ts";
 import { warningForViolation } from "./workflow-monitor/warnings.ts";
 import { WORKFLOW_PHASES, type WorkflowPhase } from "./workflow-monitor/workflow-tracker.ts";
 import { buildWorkflowNextPrefill } from "./workflow-monitor/workflow-transitions.ts";
@@ -31,9 +32,17 @@ function pathFromInput(input: unknown): string | undefined {
 }
 
 function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void {
-  const lines = [`Superpowers: ${state.phase ?? "idle"}`];
+  const strip = WORKFLOW_PHASES.map((phase) => {
+    const status = state.workflow.phases[phase];
+    if (state.workflow.currentPhase === phase) return `[${phase}]`;
+    if (status === "complete") return `✓${phase}`;
+    if (status === "skipped") return `–${phase}`;
+    return phase;
+  }).join("  ");
+  const lines = [strip];
+  if (state.tdd.status !== "RED-PENDING") lines.push(`TDD: ${state.tdd.status}`);
+  if (state.debugMode) lines.push("Debug: active");
   if (state.sourceEditedSinceVerification) lines.push("verification stale");
-  if (state.debugMode) lines.push("debug mode active");
   ctx.ui.setWidget("pi-superpowers-workflow", lines);
 }
 
@@ -51,10 +60,20 @@ function parseWorkflowNextArgs(args: string): { phase: WorkflowPhase; artifact?:
 
 export default function (pi: ExtensionAPI) {
   const handler = createWorkflowHandler();
+  let branchReminderSent = false;
+
+  function notifyBranchSafety(ctx: ExtensionContext): void {
+    if (branchReminderSent) return;
+    branchReminderSent = true;
+    const ref = getCurrentGitRef() ?? "git ref unavailable";
+    ctx.ui.notify(`Superpowers branch safety: first write in this session on ${ref}. Confirm this is the intended branch/worktree.`, "warning");
+  }
 
   function reconstruct(ctx: ExtensionContext): void {
+    branchReminderSent = false;
     const state = latestState(ctx);
     if (state) handler.setFullState(state);
+    else handler.resetState();
     refreshWidget(ctx, handler.getFullState());
   }
 
@@ -76,6 +95,7 @@ export default function (pi: ExtensionAPI) {
       ctx.ui.notify(reason, "warning");
       return { block: true, reason };
     }
+    if (result.changed) persist(pi, ctx, handler);
   });
 
   pi.on("tool_result", async (event: any, ctx) => {
@@ -83,7 +103,12 @@ export default function (pi: ExtensionAPI) {
 
     if ((event.toolName === "write" || event.toolName === "edit") && !event.isError) {
       const path = pathFromInput(event.input);
-      if (path) changed = handler.handleFileWritten(path).changed || changed;
+      if (path) {
+        notifyBranchSafety(ctx);
+        const result = handler.handleFileWritten(path);
+        changed = result.changed || changed;
+        if (result.violation) ctx.ui.notify(warningForViolation(result.violation), "warning");
+      }
     }
 
     changed = handler.handleToolResult(event.toolName, event.input, event).changed || changed;
@@ -98,6 +123,7 @@ export default function (pi: ExtensionAPI) {
   pi.registerCommand("workflow-reset", {
     description: "Reset pi-superpowers workflow monitor state",
     handler: async (_args, ctx) => {
+      branchReminderSent = false;
       handler.resetState();
       persist(pi, ctx, handler);
       ctx.ui.notify("Superpowers workflow state reset", "info");

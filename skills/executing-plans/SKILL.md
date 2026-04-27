@@ -23,6 +23,16 @@ Load plan, review critically, execute all tasks, report when complete.
 
 ### Step 2: Execute Tasks
 
+Use the Pi `todo` tool for plan task state:
+
+```ts
+todo({ action: "create", subject: "Implement Task N" })
+todo({ action: "update", id: 1, status: "in_progress", activeForm: "implementing task N" })
+todo({ action: "update", id: 1, status: "completed" })
+```
+
+**Workflow monitor signals:** `todo.create` and `todo.update(... status: "in_progress")` tell the runtime monitor that execution has begun. Completed todos let the monitor infer execution progress. For a fresh verification session after all tasks pass, use `/workflow-next verify <plan-path>`.
+
 For each task:
 1. Mark as in_progress
 2. Follow each step exactly (plan has bite-sized steps)

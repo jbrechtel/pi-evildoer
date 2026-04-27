@@ -11,6 +11,8 @@ Random fixes waste time and create new bugs. Quick patches mask underlying issue
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
 
+**Workflow monitor:** The runtime monitor recognises investigation activity and warns when source fixes happen before investigation or when repeated fixes fail. These warnings are guardrails; complete this skill's debugging process regardless of whether a warning appears.
+
 **Violating the letter of this process is violating the spirit of debugging.**
 
 ## The Iron Law

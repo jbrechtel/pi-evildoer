@@ -56,6 +56,18 @@ export const WORKFLOW_BOUNDARY_PROMPTS: Record<string, BoundaryPrompt> = {
   },
 };
 
+const PHASE_TO_SKILL: Record<WorkflowPhase, string> = {
+  brainstorm: "brainstorming",
+  plan: "writing-plans",
+  execute: "executing-plans",
+  verify: "verification-before-completion",
+  review: "requesting-code-review",
+  finish: "finishing-a-development-branch",
+};
+
 export function buildWorkflowNextPrefill(phase: WorkflowPhase, artifact?: string): string {
-  return [`/skill:${phase}`, artifact ? `Artifact: ${artifact}` : undefined].filter(Boolean).join("\n\n");
+  const skillLine = phase === "execute"
+    ? "/skill:subagent-driven-development or /skill:executing-plans"
+    : `/skill:${PHASE_TO_SKILL[phase]}`;
+  return [skillLine, artifact ? `Continue from artifact: ${artifact}` : undefined].filter(Boolean).join("\n\n");
 }

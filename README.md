@@ -6,6 +6,12 @@ Canonical Superpowers workflow skills and runtime guardrails for Pi.
 
 This package treats [`obra/superpowers`](https://github.com/obra/superpowers) as canonical for methodology and skill behavior. Pi-specific files adapt that behavior to Pi tools and package conventions.
 
+## Acknowledgements
+
+This package uses [`obra/superpowers`](https://github.com/obra/superpowers) as the canonical source for Superpowers methodology and skill behavior.
+
+The workflow-monitor runtime design also builds on prior work from [`coctostan/pi-superpowers-plus`](https://github.com/coctostan/pi-superpowers-plus), especially its Pi TUI workflow strip, TDD/debug/verification monitor concepts, branch-safety reminders, and workflow state tracking. This package adapts those ideas to the current `obra/superpowers` skills, `todo`, and `pi-subagents` contracts.
+
 ## Required Companion Packages
 
 Install the runtime companion packages separately:
@@ -44,6 +50,31 @@ For project-local installation, use Pi's local package install mode from your pr
 - `TodoWrite` → `todo` from `@juicesharp/rpiv-todo`.
 - `Task` / subagent workflow → `subagent` from `pi-subagents`.
 - `Read` / `Write` / `Edit` / `Bash` → Pi `read` / `write` / `edit` / `bash`.
+
+## Workflow Monitor Runtime
+
+The bundled workflow monitor tracks the Superpowers phase strip in the Pi UI:
+
+`Brainstorm → Plan → Execute → Verify → Review → Finish`
+
+It records canonical artifacts and tool signals:
+
+- Brainstorm artifacts: `docs/specs/YYYY-MM-DD-<topic>-design.md`.
+- Plan artifacts: `docs/plans/YYYY-MM-DD-<feature>.md`.
+- `todo` create/update signals execution progress.
+- `subagent` calls to `worker`, `superpowers-spec-reviewer`, and `superpowers-code-reviewer` signal delegated execution and review.
+
+The monitor also provides runtime guardrails:
+
+- Brainstorm/plan writes are limited to `docs/specs/` and `docs/plans/`.
+- TDD state warns on source edits before a failing test.
+- Debug state warns on fixes before investigation or repeated failing fixes.
+- Verification state becomes stale after source edits and gates completion actions such as `git commit`, `git push`, and `gh pr create` until fresh verification passes.
+
+Commands:
+
+- `/workflow-next <phase> [artifact]` starts a fresh session prefilled with the skill for the next phase, for example `/workflow-next execute docs/plans/example.md`.
+- `/workflow-reset` clears the persisted workflow monitor state for a new unrelated task.
 
 ## Reviewer Agents
 

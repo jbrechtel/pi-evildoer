@@ -8,9 +8,22 @@ export function processWriteWarning(path?: string): string {
   ].filter(Boolean).join("\n");
 }
 
-export function tddWarning(): string {
-  return "Superpowers TDD guardrail: NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.";
+export function tddWarning(detail?: string): string {
+  return [
+    "Superpowers TDD guardrail: NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.",
+    detail,
+  ].filter(Boolean).join("\n");
 }
+
+export function debugWarning(detail?: string): string {
+  return [
+    "Superpowers debugging guardrail: investigate root cause before fixes.",
+    detail,
+  ].filter(Boolean).join("\n");
+}
+
+export const getTddViolationWarning = tddWarning;
+export const getDebugViolationWarning = debugWarning;
 
 export function verificationWarning(violation: WorkflowViolation): string {
   return [
@@ -20,7 +33,13 @@ export function verificationWarning(violation: WorkflowViolation): string {
   ].join("\n");
 }
 
+export const getVerificationViolationWarning = verificationWarning;
+
 export function warningForViolation(violation: WorkflowViolation): string {
   if (violation.type === "process-write-during-thinking") return processWriteWarning(violation.path);
+  if (violation.type === "source-before-failing-test") return tddWarning(violation.message);
+  if (violation.type === "fix-before-investigation" || violation.type === "repeated-fix-failures") {
+    return debugWarning(violation.message);
+  }
   return verificationWarning(violation);
 }

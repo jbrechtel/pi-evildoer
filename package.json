@@ -1,8 +1,9 @@
 {
   "name": "@casualjim/pi-superpowers",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Canonical Superpowers workflow skills and runtime guardrails for pi",
   "type": "module",
+
   "license": "MIT",
   "author": "casualjim",
   "keywords": ["pi-package", "pi", "superpowers", "agent-skills", "workflow"],

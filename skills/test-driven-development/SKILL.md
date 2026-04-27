@@ -44,6 +44,10 @@ Write code before the test? Delete it. Start over.
 
 Implement fresh from tests. Period.
 
+## Workflow Monitor
+
+The runtime monitor tracks TDD state (`RED-PENDING`, `RED`, `GREEN`, `REFACTOR`) and warns on source-before-test patterns. These warnings are guardrails; follow this skill's process regardless of whether a warning appears.
+
 ## Red-Green-Refactor
 
 ```dot

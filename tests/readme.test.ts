@@ -21,6 +21,23 @@ test("README states obra superpowers is canonical", () => {
   assert.match(readme, /canonical/i);
 });
 
+test("README acknowledges pi-superpowers-plus workflow monitor prior art", () => {
+  assert.match(readme, /coctostan\/pi-superpowers-plus/);
+  assert.match(readme, /workflow-monitor runtime design/i);
+  assert.match(readme, /TUI workflow strip/);
+});
+
+test("README documents workflow monitor runtime commands and boundaries", () => {
+  assert.match(readme, /\/workflow-next/);
+  assert.match(readme, /\/workflow-reset/);
+  assert.match(readme, /docs\/specs\/.*-design\.md/);
+  assert.match(readme, /docs\/plans\//);
+  assert.match(readme, /todo.*execution/i);
+  assert.match(readme, /subagent.*review/i);
+  assert.match(readme, /git commit/);
+  assert.match(readme, /gh pr create/);
+});
+
 test("README documents read-only reviewer agents", () => {
   assert.match(readme, /superpowers-spec-reviewer/);
   assert.match(readme, /superpowers-code-reviewer/);

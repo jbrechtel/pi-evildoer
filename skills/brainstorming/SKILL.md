@@ -132,6 +132,8 @@ Wait for the user's response. If they request changes, make them and re-run the 
 
 **Implementation:**
 
+**Workflow monitor handoff:** The runtime monitor recognises the written `docs/specs/*-design.md` file as the brainstorm artifact. For a fresh planning session, use `/workflow-next plan <spec-path>`.
+
 - Invoke the writing-plans skill to create a detailed implementation plan
 - Do NOT invoke any other skill. writing-plans is the next step.
 

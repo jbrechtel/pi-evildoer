@@ -65,6 +65,8 @@ Which option?
 
 ### Step 4: Execute Choice
 
+**Workflow monitor gates:** `git commit`, `git push`, and `gh pr create` are gated by the runtime monitor when source edits have not been followed by fresh verification. Run the required verification before these actions. Use `/workflow-reset` when starting a new unrelated task.
+
 #### Option 1: Merge Locally
 
 ```bash
