@@ -57,7 +57,7 @@ function pathFromInput(input: unknown): string | undefined {
 }
 
 function hasTddActivity(state: WorkflowMonitorState): boolean {
-  return state.tdd.hasTestChange || state.tdd.hasSourceChange || state.tdd.lastTestExitCode !== null;
+  return state.tdd.hasTestChange || state.tdd.lastTestExitCode !== null;
 }
 
 // Keep this phase strip visually identical to pi-superpowers-plus:
@@ -97,7 +97,7 @@ function formatDebugStatus(state: WorkflowMonitorState, theme: any): string | nu
 function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void {
   const hasWorkflow = !!state.workflow.currentPhase;
   const showTdd = hasTddActivity(state);
-  const showDebug = state.debugMode || state.investigation.hasInvestigation;
+  const showDebug = state.debugMode;
   const showVerification = state.sourceEditedSinceVerification;
 
   if (!hasWorkflow && !showTdd && !showDebug && !showVerification) {

@@ -126,6 +126,8 @@ test("extension observes todo and pi-subagents tools", async () => {
 test("extension widget uses the pi-superpowers-plus guardrail highlighting contract", async () => {
   const harness = createHarness();
   await harness.emit("tool_result", { toolName: "write", input: { path: "tests/widget.test.ts" }, isError: false });
+  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<error>TDD: RED-PENDING<\/error>/);
+
   await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
   assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<error>TDD: RED<\/error>/);
 
@@ -135,6 +137,16 @@ test("extension widget uses the pi-superpowers-plus guardrail highlighting contr
   await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
   assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<warning>Debug: 2 fix attempts<\/warning>/);
   assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<dim>  \|  <\/dim>/);
+});
+
+test("extension widget does not show idle TDD or investigation-only debug", async () => {
+  const harness = createHarness();
+  await harness.emit("tool_result", { toolName: "write", input: { path: "src/source-only.ts" }, isError: false });
+  assert.doesNotMatch(renderWidget(harness.widgets["pi-superpowers-workflow"]), /TDD: RED-PENDING/);
+
+  const debugHarness = createHarness();
+  await debugHarness.emit("tool_result", { toolName: "read", input: { path: "src/source-only.ts" }, content: "" });
+  assert.equal(debugHarness.widgets["pi-superpowers-workflow"], undefined);
 });
 
 test("extension emits branch safety reminder per reconstructed workflow", async () => {
