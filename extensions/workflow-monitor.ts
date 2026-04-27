@@ -7,6 +7,31 @@ import { buildWorkflowNextPrefill } from "./workflow-monitor/workflow-transition
 
 const STATE_ENTRY_TYPE = "pi-superpowers-workflow-state";
 
+class WidgetText {
+  text: string;
+  private paddingX: number;
+  private paddingY: number;
+
+  constructor(text: string, paddingX = 0, paddingY = 0) {
+    this.text = text;
+    this.paddingX = paddingX;
+    this.paddingY = paddingY;
+  }
+
+  render(width = this.text.length): string[] {
+    const horizontal = " ".repeat(this.paddingX);
+    const blank = " ".repeat(Math.max(0, width));
+    const lines = [`${horizontal}${this.text}${horizontal}`];
+    return [
+      ...Array.from({ length: this.paddingY }, () => blank),
+      ...lines,
+      ...Array.from({ length: this.paddingY }, () => blank),
+    ];
+  }
+
+  invalidate(): void {}
+}
+
 function branchEntries(ctx: ExtensionContext): any[] {
   const manager = ctx.sessionManager as any;
   if (typeof manager.getBranch === "function") return manager.getBranch();
@@ -31,19 +56,62 @@ function pathFromInput(input: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void {
-  const strip = WORKFLOW_PHASES.map((phase) => {
+function hasTddActivity(state: WorkflowMonitorState): boolean {
+  return state.tdd.hasTestChange || state.tdd.hasSourceChange || state.tdd.lastTestExitCode !== null;
+}
+
+function formatPhaseStrip(state: WorkflowMonitorState, theme: any): string {
+  if (!state.workflow.currentPhase) return "";
+  const arrow = theme.fg("dim", " → ");
+  return WORKFLOW_PHASES.map((phase) => {
     const status = state.workflow.phases[phase];
-    if (state.workflow.currentPhase === phase) return `[${phase}]`;
-    if (status === "complete") return `✓${phase}`;
-    if (status === "skipped") return `–${phase}`;
-    return phase;
-  }).join("  ");
-  const lines = [strip];
-  if (state.tdd.status !== "RED-PENDING") lines.push(`TDD: ${state.tdd.status}`);
-  if (state.debugMode) lines.push("Debug: active");
-  if (state.sourceEditedSinceVerification) lines.push("verification stale");
-  ctx.ui.setWidget("pi-superpowers-workflow", lines);
+    if (state.workflow.currentPhase === phase) return theme.fg("accent", `[${phase}]`);
+    if (status === "complete") return theme.fg("success", `✓${phase}`);
+    if (status === "skipped") return theme.fg("dim", `–${phase}`);
+    return theme.fg("dim", phase);
+  }).join(arrow);
+}
+
+function formatTddStatus(state: WorkflowMonitorState, theme: any): string | null {
+  if (!hasTddActivity(state)) return null;
+  const colorMap: Record<string, string> = {
+    "RED-PENDING": "error",
+    RED: "error",
+    GREEN: "success",
+    REFACTOR: "accent",
+  };
+  return theme.fg(colorMap[state.tdd.status] ?? "muted", `TDD: ${state.tdd.status}`);
+}
+
+function formatDebugStatus(state: WorkflowMonitorState, theme: any): string | null {
+  if (!state.debugMode && !state.investigation.hasInvestigation) return null;
+  const attempts = state.debug.failedFixAttempts;
+  if (attempts >= 3) return theme.fg("error", `Debug: ${attempts} fix attempts ⚠️`);
+  if (attempts > 0) return theme.fg("warning", `Debug: ${attempts} fix attempt${attempts !== 1 ? "s" : ""}`);
+  return theme.fg("accent", "Debug: investigating");
+}
+
+function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void {
+  const hasWorkflow = !!state.workflow.currentPhase;
+  const showTdd = hasTddActivity(state);
+  const showDebug = state.debugMode || state.investigation.hasInvestigation;
+  const showVerification = state.sourceEditedSinceVerification;
+
+  if (!hasWorkflow && !showTdd && !showDebug && !showVerification) {
+    ctx.ui.setWidget("pi-superpowers-workflow", undefined);
+    return;
+  }
+
+  ctx.ui.setWidget("pi-superpowers-workflow", (_tui: unknown, theme: any) => {
+    const parts = [
+      hasWorkflow ? formatPhaseStrip(state, theme) : null,
+      formatTddStatus(state, theme),
+      formatDebugStatus(state, theme),
+      showVerification ? theme.fg("warning", "verification stale") : null,
+    ].filter((part): part is string => !!part);
+
+    return parts.length > 0 ? new WidgetText(parts.join(theme.fg("dim", "  |  "))) : undefined;
+  });
 }
 
 function persist(pi: ExtensionAPI, ctx: ExtensionContext, handler: ReturnType<typeof createWorkflowHandler>): void {

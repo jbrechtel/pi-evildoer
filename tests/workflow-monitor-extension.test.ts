@@ -4,6 +4,20 @@ import { join } from "node:path";
 import { test } from "node:test";
 import workflowMonitorExtension from "../extensions/workflow-monitor.ts";
 
+function renderWidget(widget: unknown): string {
+  assert.equal(typeof widget, "function");
+  const theme = {
+    fg(color: string, text: string) {
+      return `<${color}>${text}</${color}>`;
+    },
+    bold(text: string) {
+      return `<bold>${text}</bold>`;
+    },
+  };
+  const rendered = (widget as Function)(null, theme);
+  return String(rendered?.text ?? rendered ?? "");
+}
+
 function createHarness(existingEntries: any[] = []) {
   const handlers = new Map<string, Function[]>();
   const commands = new Map<string, any>();
@@ -71,8 +85,10 @@ test("extension persists reconstructed workflow state and renders workflow strip
   await harness.emit("input", { text: "/skill:brainstorming" });
 
   assert.equal(harness.appended.length, 1);
-  assert.match(String(harness.widgets["pi-superpowers-workflow"]), /\[brainstorm\]/);
-  assert.match(String(harness.widgets["pi-superpowers-workflow"]), /plan/);
+  const widgetText = renderWidget(harness.widgets["pi-superpowers-workflow"]);
+  assert.match(widgetText, /<accent>\[brainstorm\]<\/accent>/);
+  assert.match(widgetText, /<dim> → <\/dim>/);
+  assert.match(widgetText, /<dim>plan<\/dim>/);
 
   await harness.emit("tool_result", { toolName: "write", input: { path: "docs/specs/example-design.md" }, isError: false });
   assert.equal(harness.appended.at(-1).data.workflow.artifacts.brainstorm, "docs/specs/example-design.md");
@@ -80,11 +96,28 @@ test("extension persists reconstructed workflow state and renders workflow strip
 
 test("extension observes todo and pi-subagents tools", async () => {
   const harness = createHarness();
+  await harness.emit("input", { text: "/skill:writing-plans" });
   await harness.emit("tool_call", { toolName: "todo", input: { action: "create", subject: "Implement Task 1" } });
   assert.equal(harness.appended.at(-1).data.workflow.currentPhase, "execute");
+  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<success>✓plan<\/success>.*<accent>\[execute\]<\/accent>/);
 
   await harness.emit("tool_call", { toolName: "subagent", input: { agent: "superpowers-code-reviewer", task: "Review" } });
   assert.equal(harness.appended.at(-1).data.workflow.currentPhase, "review");
+});
+
+
+test("extension widget shows plus-style TDD and debug highlighting", async () => {
+  const harness = createHarness();
+  await harness.emit("tool_result", { toolName: "write", input: { path: "tests/widget.test.ts" }, isError: false });
+  await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
+  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<error>TDD: RED<\/error>/);
+
+  await harness.emit("tool_result", { toolName: "write", input: { path: "src/widget.ts" }, isError: false });
+  await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
+  await harness.emit("tool_result", { toolName: "write", input: { path: "src/widget.ts" }, isError: false });
+  await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
+  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<warning>Debug: 2 fix attempts<\/warning>/);
+  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<dim>  \|  <\/dim>/);
 });
 
 test("extension emits branch safety reminder per reconstructed workflow", async () => {
@@ -138,8 +171,8 @@ test("extension resets handler when branch has no persisted workflow state", asy
 
   harness.appended.length = 0;
   await harness.emit("session_tree", {});
-  assert.match(String(harness.widgets["pi-superpowers-workflow"]), /brainstorm/);
-  assert.doesNotMatch(String(harness.widgets["pi-superpowers-workflow"]), /\[plan\]/);
+  const widget = harness.widgets["pi-superpowers-workflow"];
+  assert.equal(widget, undefined);
 });
 
 test("extension source avoids forbidden plus-only workflow components", () => {
