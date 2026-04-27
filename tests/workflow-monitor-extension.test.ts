@@ -139,14 +139,19 @@ test("extension widget uses the pi-superpowers-plus guardrail highlighting contr
   assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<dim>  \|  <\/dim>/);
 });
 
-test("extension widget does not show idle TDD or investigation-only debug", async () => {
+test("extension widget does not show idle TDD, investigation-only debug, or verification stale", async () => {
   const harness = createHarness();
   await harness.emit("tool_result", { toolName: "write", input: { path: "src/source-only.ts" }, isError: false });
-  assert.doesNotMatch(renderWidget(harness.widgets["pi-superpowers-workflow"]), /TDD: RED-PENDING/);
+  assert.equal(harness.widgets["pi-superpowers-workflow"], undefined);
 
   const debugHarness = createHarness();
   await debugHarness.emit("tool_result", { toolName: "read", input: { path: "src/source-only.ts" }, content: "" });
   assert.equal(debugHarness.widgets["pi-superpowers-workflow"], undefined);
+
+  const workflowHarness = createHarness();
+  await workflowHarness.emit("input", { text: "/skill:writing-plans" });
+  await workflowHarness.emit("tool_result", { toolName: "read", input: { path: "src/source-only.ts" }, content: "" });
+  assert.doesNotMatch(renderWidget(workflowHarness.widgets["pi-superpowers-workflow"]), /Debug: investigating/);
 });
 
 test("extension emits branch safety reminder per reconstructed workflow", async () => {

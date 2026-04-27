@@ -87,7 +87,7 @@ function formatTddStatus(state: WorkflowMonitorState, theme: any): string | null
 }
 
 function formatDebugStatus(state: WorkflowMonitorState, theme: any): string | null {
-  if (!state.debugMode && !state.investigation.hasInvestigation) return null;
+  if (!state.debugMode) return null;
   const attempts = state.debug.failedFixAttempts;
   if (attempts >= 3) return theme.fg("error", `Debug: ${attempts} fix attempts ⚠️`);
   if (attempts > 0) return theme.fg("warning", `Debug: ${attempts} fix attempt${attempts !== 1 ? "s" : ""}`);
@@ -98,9 +98,7 @@ function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void
   const hasWorkflow = !!state.workflow.currentPhase;
   const showTdd = hasTddActivity(state);
   const showDebug = state.debugMode;
-  const showVerification = state.sourceEditedSinceVerification;
-
-  if (!hasWorkflow && !showTdd && !showDebug && !showVerification) {
+  if (!hasWorkflow && !showTdd && !showDebug) {
     ctx.ui.setWidget("pi-superpowers-workflow", undefined);
     return;
   }
@@ -110,7 +108,6 @@ function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void
       hasWorkflow ? formatPhaseStrip(state, theme) : null,
       formatTddStatus(state, theme),
       formatDebugStatus(state, theme),
-      showVerification ? theme.fg("warning", "verification stale") : null,
     ].filter((part): part is string => !!part);
 
     return parts.length > 0 ? new WidgetText(parts.join(theme.fg("dim", "  |  "))) : undefined;
