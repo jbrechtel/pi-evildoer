@@ -88,12 +88,6 @@ test("skills use todo tool instead of TodoWrite or plan_tracker operational inst
   }
 });
 
-test("canonical strict TDD language is preserved", () => {
-  const text = readSkill("test-driven-development/SKILL.md");
-  assert.match(text, /NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST/);
-  assert.doesNotMatch(text, /Three Scenarios/i);
-});
-
 test("skills expose workflow monitor artifact and handoff contracts", () => {
   const brainstorming = readSkill("brainstorming/SKILL.md");
   assert.match(brainstorming, /docs\/specs\/YYYY-MM-DD-<topic>-design\.md/);
@@ -121,30 +115,4 @@ test("execution skills expose todo and pi-subagents workflow monitor contracts",
   assert.match(sdd, /Keep these agent names exact|agent names are part of the runtime contract/i);
   assert.doesNotMatch(sdd, /agent:\s*"code-reviewer"/);
   assert.doesNotMatch(sdd, /agent:\s*"spec-reviewer"/);
-});
-
-test("review verification finish TDD and debugging skills expose monitor contracts", () => {
-  const verification = readSkill("verification-before-completion/SKILL.md");
-  assert.match(verification, /source edit.*stale/i);
-  assert.match(verification, /\/workflow-next review/);
-
-  const review = readSkill("requesting-code-review/SKILL.md");
-  assert.match(review, /agent:\s*"superpowers-code-reviewer"/);
-  assert.match(review, /canonical review phase signal|review phase signal/i);
-  assert.match(review, /\/workflow-next finish/);
-
-  const finish = readSkill("finishing-a-development-branch/SKILL.md");
-  assert.match(finish, /git commit/);
-  assert.match(finish, /git push/);
-  assert.match(finish, /gh pr create/);
-  assert.match(finish, /\/workflow-reset/);
-
-  const tdd = readSkill("test-driven-development/SKILL.md");
-  assert.match(tdd, /RED-PENDING/);
-  assert.match(tdd, /REFACTOR/);
-  assert.match(tdd, /guardrails/i);
-
-  const debugging = readSkill("systematic-debugging/SKILL.md");
-  assert.match(debugging, /investigation activity/i);
-  assert.match(debugging, /repeated fixes fail|repeated fix attempts/i);
 });

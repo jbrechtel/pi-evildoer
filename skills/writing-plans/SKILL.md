@@ -135,20 +135,9 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 **Workflow monitor handoff:** The runtime monitor recognises the saved `docs/plans/*.md` file as the plan artifact. For a fresh execution session, use `/workflow-next execute <plan-path>`.
 
-After saving the plan, offer execution choice:
+After saving the plan, confirm if the user wants to execute the plan now:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `docs/plans/<filename>.md`. Should I execute it now?**
 
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
-
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use `/skill:subagent-driven-development`
-- Fresh subagent per task + two-stage review
-
-**If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use `/skill:executing-plans`
 - Batch execution with checkpoints for review

@@ -56,36 +56,6 @@ function pathFromInput(input: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function hasTddActivity(state: WorkflowMonitorState): boolean {
-  return state.tdd.hasTestChange || state.tdd.lastTestExitCode !== null;
-}
-
-// Keep this phase strip visually identical to pi-superpowers-plus:
-// current: accent [phase], complete: success ✓phase, skipped/pending: dim,
-// separator: dim " → ". Do not simplify to plain string-array widgets.
-function formatPhaseStrip(state: WorkflowMonitorState, theme: any): string {
-  if (!state.workflow.currentPhase) return "";
-  const arrow = theme.fg("dim", " → ");
-  return WORKFLOW_PHASES.map((phase) => {
-    const status = state.workflow.phases[phase];
-    if (state.workflow.currentPhase === phase) return theme.fg("accent", `[${phase}]`);
-    if (status === "complete") return theme.fg("success", `✓${phase}`);
-    if (status === "skipped") return theme.fg("dim", `–${phase}`);
-    return theme.fg("dim", phase);
-  }).join(arrow);
-}
-
-function formatTddStatus(state: WorkflowMonitorState, theme: any): string | null {
-  if (!hasTddActivity(state)) return null;
-  const colorMap: Record<string, string> = {
-    "RED-PENDING": "error",
-    RED: "error",
-    GREEN: "success",
-    REFACTOR: "accent",
-  };
-  return theme.fg(colorMap[state.tdd.status] ?? "muted", `TDD: ${state.tdd.status}`);
-}
-
 function formatDebugStatus(state: WorkflowMonitorState, theme: any): string | null {
   if (!state.debugMode) return null;
   const attempts = state.debug.failedFixAttempts;
@@ -96,9 +66,8 @@ function formatDebugStatus(state: WorkflowMonitorState, theme: any): string | nu
 
 function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void {
   const hasWorkflow = !!state.workflow.currentPhase;
-  const showTdd = hasTddActivity(state);
   const showDebug = state.debugMode;
-  if (!hasWorkflow && !showTdd && !showDebug) {
+  if (!hasWorkflow && !showDebug) {
     ctx.ui.setWidget("pi-superpowers-workflow", undefined);
     return;
   }
@@ -106,7 +75,6 @@ function refreshWidget(ctx: ExtensionContext, state: WorkflowMonitorState): void
   ctx.ui.setWidget("pi-superpowers-workflow", (_tui: unknown, theme: any) => {
     const parts = [
       hasWorkflow ? formatPhaseStrip(state, theme) : null,
-      formatTddStatus(state, theme),
       formatDebugStatus(state, theme),
     ].filter((part): part is string => !!part);
 

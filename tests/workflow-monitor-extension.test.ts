@@ -123,37 +123,6 @@ test("extension observes todo and pi-subagents tools", async () => {
 });
 
 
-test("extension widget uses the pi-superpowers-plus guardrail highlighting contract", async () => {
-  const harness = createHarness();
-  await harness.emit("tool_result", { toolName: "write", input: { path: "tests/widget.test.ts" }, isError: false });
-  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<error>TDD: RED-PENDING<\/error>/);
-
-  await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
-  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<error>TDD: RED<\/error>/);
-
-  await harness.emit("tool_result", { toolName: "write", input: { path: "src/widget.ts" }, isError: false });
-  await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
-  await harness.emit("tool_result", { toolName: "write", input: { path: "src/widget.ts" }, isError: false });
-  await harness.emit("tool_result", { toolName: "bash", input: { command: "npm test" }, content: "FAIL", details: { exitCode: 1 } });
-  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<warning>Debug: 2 fix attempts<\/warning>/);
-  assert.match(renderWidget(harness.widgets["pi-superpowers-workflow"]), /<dim>  \|  <\/dim>/);
-});
-
-test("extension widget does not show idle TDD, investigation-only debug, or verification stale", async () => {
-  const harness = createHarness();
-  await harness.emit("tool_result", { toolName: "write", input: { path: "src/source-only.ts" }, isError: false });
-  assert.equal(harness.widgets["pi-superpowers-workflow"], undefined);
-
-  const debugHarness = createHarness();
-  await debugHarness.emit("tool_result", { toolName: "read", input: { path: "src/source-only.ts" }, content: "" });
-  assert.equal(debugHarness.widgets["pi-superpowers-workflow"], undefined);
-
-  const workflowHarness = createHarness();
-  await workflowHarness.emit("input", { text: "/skill:writing-plans" });
-  await workflowHarness.emit("tool_result", { toolName: "read", input: { path: "src/source-only.ts" }, content: "" });
-  assert.doesNotMatch(renderWidget(workflowHarness.widgets["pi-superpowers-workflow"]), /Debug: investigating/);
-});
-
 test("extension emits branch safety reminder per reconstructed workflow", async () => {
   const harness = createHarness();
   await harness.emit("tool_result", { toolName: "write", input: { path: "README.md" }, isError: false });

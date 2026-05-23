@@ -1,4 +1,4 @@
-import { isAllowedThinkingPhaseWrite, isSourceFile, isTestFile } from "./heuristics.ts";
+import { isAllowedThinkingPhaseWrite, isSourceFile } from "./heuristics.ts";
 import { parseTestCommand, parseTestResult, testCommandKind } from "./test-runner.ts";
 import {
   createDebugState,
@@ -12,12 +12,6 @@ import {
   type InvestigationState,
 } from "./investigation.ts";
 import {
-  createTddState,
-  nextTddState,
-  tddWarningsForEvent,
-  type TddState,
-} from "./tdd-monitor.ts";
-import {
   createVerificationState,
   nextVerificationState,
   verificationWarningsForEvent,
@@ -27,7 +21,6 @@ import { WorkflowTracker, type WorkflowPhase, type WorkflowTrackerState } from "
 
 export type WorkflowViolationType =
   | "process-write-during-thinking"
-  | "source-before-failing-test"
   | "fix-before-investigation"
   | "repeated-fix-failures"
   | "commit-without-verification"
@@ -59,7 +52,6 @@ export interface WorkflowMonitorState {
 
   // Full monitor state.
   workflow: WorkflowTrackerState;
-  tdd: TddState;
   debug: DebugState;
   investigation: InvestigationState;
   verification: VerificationState;
@@ -76,7 +68,6 @@ function initialState(): WorkflowMonitorState {
     debugMode: false,
     completedPhases: [],
     workflow,
-    tdd: createTddState(),
     debug: createDebugState(),
     investigation: createInvestigationState(),
     verification: createVerificationState(),
@@ -93,7 +84,6 @@ function cloneState(state: WorkflowMonitorState): WorkflowMonitorState {
       artifacts: { ...state.workflow.artifacts },
       prompted: { ...state.workflow.prompted },
     },
-    tdd: { ...state.tdd },
     debug: { ...state.debug },
     investigation: { ...state.investigation },
     verification: { ...state.verification },
@@ -108,7 +98,6 @@ function mergeState(nextState?: Partial<WorkflowMonitorState>): WorkflowMonitorS
     ...nextState,
     completedPhases: nextState.completedPhases ? [...nextState.completedPhases] : base.completedPhases,
     workflow: nextState.workflow ? { ...base.workflow, ...nextState.workflow } : base.workflow,
-    tdd: nextState.tdd ? { ...base.tdd, ...nextState.tdd } : base.tdd,
     debug: nextState.debug ? { ...base.debug, ...nextState.debug } : base.debug,
     investigation: nextState.investigation ? { ...base.investigation, ...nextState.investigation } : base.investigation,
     verification: nextState.verification ? { ...base.verification, ...nextState.verification } : base.verification,
@@ -176,9 +165,6 @@ export function createWorkflowHandler(initial?: Partial<WorkflowMonitorState>) {
       return { type: "repeated-fix-failures", path, message: debugWarningText };
     }
 
-    const tddWarningText = tddWarningsForEvent(state.tdd, { kind: "source-write", path })[0];
-    if (tddWarningText) return { type: "source-before-failing-test", path, message: tddWarningText };
-
     if (debugWarningText) return { type: "fix-before-investigation", path, message: debugWarningText };
     return undefined;
   }
@@ -187,15 +173,9 @@ export function createWorkflowHandler(initial?: Partial<WorkflowMonitorState>) {
     let changed = tracker.onFileWritten(filePath);
     syncFromTracker();
 
-    if (isTestFile(filePath)) {
-      state.tdd = nextTddState(state.tdd, { kind: "test-write", path: filePath });
-      changed = true;
-    }
-
     if (!isSourceFile(filePath)) return { changed };
 
     const violation = sourceViolationFor(filePath);
-    state.tdd = nextTddState(state.tdd, { kind: "source-write", path: filePath });
     state.debug = nextDebugState(state.debug, { kind: "source-write", path: filePath });
     state.verification = nextVerificationState(state.verification, { kind: "source-write", path: filePath });
     state.lastSourceEditAt = Date.now();
@@ -212,7 +192,6 @@ export function createWorkflowHandler(initial?: Partial<WorkflowMonitorState>) {
       if (passed !== null) {
         state.verification = nextVerificationState(state.verification, { kind: "test-run", command, exitCode: passed ? 0 : 1 });
         if (kind === "test") {
-          state.tdd = nextTddState(state.tdd, { kind: "test-run", command, exitCode: passed ? 0 : 1 });
           state.debug = nextDebugState(state.debug, { kind: "test-run", command, exitCode: passed ? 0 : 1 });
           state.consecutiveFailingTests = passed ? 0 : state.consecutiveFailingTests + 1;
         }

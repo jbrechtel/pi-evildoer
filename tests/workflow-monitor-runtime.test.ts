@@ -8,11 +8,6 @@ import {
   WORKFLOW_PHASES,
 } from "../extensions/workflow-monitor/workflow-tracker.ts";
 import {
-  createTddState,
-  nextTddState,
-  tddWarningsForEvent,
-} from "../extensions/workflow-monitor/tdd-monitor.ts";
-import {
   createDebugState,
   nextDebugState,
   debugWarningsForEvent,
@@ -152,24 +147,6 @@ test("tracker preserves new artifacts when file writes move backward", () => {
 
 test("skip confirmation treats the current phase as resolved", () => {
   assert.deepEqual(unresolvedPhasesBefore("execute", { currentPhase: "plan", completedPhases: ["brainstorm"] }), []);
-});
-
-test("TDD monitor tracks red green refactor and source-before-test warnings", () => {
-  let state = createTddState();
-  assert.equal(state.status, "RED-PENDING");
-  assert.deepEqual(tddWarningsForEvent(state, { kind: "source-write", path: "src/widget.ts" }), [
-    "Write or update a failing test before changing source code.",
-  ]);
-
-  state = nextTddState(state, { kind: "test-write", path: "tests/widget.test.ts" });
-  assert.equal(state.status, "RED-PENDING");
-  state = nextTddState(state, { kind: "test-run", exitCode: 1, command: "npm test" });
-  assert.equal(state.status, "RED");
-  state = nextTddState(state, { kind: "source-write", path: "src/widget.ts" });
-  state = nextTddState(state, { kind: "test-run", exitCode: 0, command: "npm test" });
-  assert.equal(state.status, "GREEN");
-  state = nextTddState(state, { kind: "source-write", path: "src/widget.ts" });
-  assert.equal(state.status, "REFACTOR");
 });
 
 test("debug and investigation monitors warn on fixes before investigation and repeated failed fixes", () => {

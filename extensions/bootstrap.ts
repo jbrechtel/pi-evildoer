@@ -20,9 +20,6 @@ export function buildCompanionNotice(activeToolNames: readonly string[]): string
   if (!active.has("todo")) {
     missing.push("- @juicesharp/rpiv-todo is missing, so the todo tool is unavailable.");
   }
-  if (!active.has("subagent")) {
-    missing.push("- pi-subagents is missing, so the subagent tool is unavailable.");
-  }
 
   if (missing.length === 0) return "";
 
@@ -35,7 +32,6 @@ export function buildCompanionNotice(activeToolNames: readonly string[]): string
     "Install them with:",
     "```bash",
     "pi install npm:@juicesharp/rpiv-todo",
-    "pi install npm:pi-subagents",
     "```",
   ].join("\n");
 }
@@ -52,10 +48,9 @@ export function buildBootstrapPrompt(usingSuperpowersContent: string): string {
     "## Pi tool mappings",
     "",
     "- TodoWrite → todo from @juicesharp/rpiv-todo.",
-    "- Claude Code Task / Superpowers subagent references → subagent from pi-subagents.",
     "- Read / Write / Edit / Bash → Pi read / write / edit / bash.",
     "",
-    "@juicesharp/rpiv-todo and pi-subagents are installed companion packages for pi-superpowers.",
+    "@juicesharp/rpiv-todo is an installed companion package for pi-evildoer.",
     "",
     "## Included using-superpowers skill",
     "",

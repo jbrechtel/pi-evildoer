@@ -1,6 +1,6 @@
-# pi-superpowers
+# pi-evildoers
 
-Canonical Superpowers workflow skills and runtime guardrails for Pi.
+Canonical Superpowers workflow skills for Pi.
 
 ## Canonical Source
 
@@ -8,9 +8,9 @@ This package treats [`obra/superpowers`](https://github.com/obra/superpowers) as
 
 ## Acknowledgements
 
-This package uses [`obra/superpowers`](https://github.com/obra/superpowers) as the canonical source for Superpowers methodology and skill behavior.
+This package uses [`obra/superpowers`](https://github.com/obra/superpowers) as the original source for Superpowers methodology and skill behavior and is forked from [`casualjim/pi-superpowers`](https://github.com/casualjim/pi-superpowers) for pi specific functionality.
 
-The workflow-monitor runtime design also builds on prior work from [`coctostan/pi-superpowers-plus`](https://github.com/coctostan/pi-superpowers-plus), especially its Pi TUI workflow strip, TDD/debug/verification monitor concepts, branch-safety reminders, and workflow state tracking. This package adapts those ideas to the current `obra/superpowers` skills, `todo`, and `pi-subagents` contracts.
+The workflow-monitor runtime design also builds on prior work from [`coctostan/pi-superpowers-plus`](https://github.com/coctostan/pi-superpowers-plus), especially its Pi TUI workflow strip. This package adapts those ideas to the current `obra/superpowers` skills.
 
 ## Required Companion Packages
 
@@ -18,22 +18,16 @@ Install the runtime companion packages separately:
 
 ```bash
 pi install npm:@juicesharp/rpiv-todo
-pi install npm:pi-subagents
 ```
 
 - `@juicesharp/rpiv-todo` provides the `todo` tool used in place of canonical Superpowers task tracking guidance.
-- `pi-subagents` provides the `subagent` tool used for delegated implementation and review workflows.
 
 ## Installation
 
-```bash
-pi install npm:@casualjim/pi-superpowers
-```
-
-You can also install directly from git:
+You can install directly from git:
 
 ```bash
-pi install git:github.com/casualjim/pi-superpowers
+pi install git:github.com/jbrechtel/pi-evildoer
 ```
 
 For project-local installation, use Pi's local package install mode from your project so package settings stay with the repository.
@@ -42,13 +36,11 @@ For project-local installation, use Pi's local package install mode from your pr
 
 - Mandatory Superpowers bootstrap injection.
 - Canonical Superpowers skills adapted for Pi.
-- Workflow monitor guardrails for phase, TDD, verification, and review reminders.
 - Bundled read-only reviewer agent templates.
 
 ## Tool Mapping
 
 - `TodoWrite` → `todo` from `@juicesharp/rpiv-todo`.
-- `Task` / subagent workflow → `subagent` from `pi-subagents`.
 - `Read` / `Write` / `Edit` / `Bash` → Pi `read` / `write` / `edit` / `bash`.
 
 ## Workflow Monitor Runtime
@@ -62,12 +54,10 @@ It records canonical artifacts and tool signals:
 - Brainstorm artifacts: `docs/specs/YYYY-MM-DD-<topic>-design.md`.
 - Plan artifacts: `docs/plans/YYYY-MM-DD-<feature>.md`.
 - `todo` create/update signals execution progress.
-- `subagent` calls to `worker`, `superpowers-spec-reviewer`, and `superpowers-code-reviewer` signal delegated execution and review.
 
 The monitor also provides runtime guardrails:
 
 - Brainstorm/plan writes are limited to `docs/specs/` and `docs/plans/`.
-- TDD state warns on source edits before a failing test.
 - Debug state warns on fixes before investigation or repeated failing fixes.
 - Verification state becomes stale after source edits and gates completion actions such as `git commit`, `git push`, and `gh pr create` until fresh verification passes.
 
